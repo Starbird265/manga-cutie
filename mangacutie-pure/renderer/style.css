@@ -1,0 +1,708 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MangaCutie — Design System & Styles
+   Pure CSS, zero frameworks. Premium dark UI with micro-animations.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── CSS Custom Properties (Design Tokens) ────────────────────────────────── */
+:root {
+  /* Gray scale */
+  --gray-950: #030712;
+  --gray-900: #111827;
+  --gray-850: #162032;
+  --gray-800: #1f2937;
+  --gray-750: #283548;
+  --gray-700: #374151;
+  --gray-600: #4b5563;
+  --gray-500: #6b7280;
+  --gray-400: #9ca3af;
+  --gray-300: #d1d5db;
+  --gray-200: #e5e7eb;
+  --gray-100: #f3f4f6;
+
+  /* Accent: Emerald */
+  --emerald-700: #047857;
+  --emerald-600: #059669;
+  --emerald-500: #10b981;
+  --emerald-400: #34d399;
+  --emerald-300: #6ee7b7;
+
+  /* Brand gradient endpoints */
+  --cyan-500: #06b6d4;
+  --cyan-400: #22d3ee;
+
+  /* Crop accent: Pink */
+  --pink-600: #db2777;
+  --pink-500: #ec4899;
+  --pink-400: #f472b6;
+
+  /* Danger: Red */
+  --red-500: #ef4444;
+  --red-400: #f87171;
+
+  /* Crop tool: Orange */
+  --orange-500: #f97316;
+  --orange-400: #fb923c;
+
+  /* Layout */
+  --sidebar-left: 260px;
+  --sidebar-right: 320px;
+  --toolbar-h: 56px;
+  --statusbar-h: 32px;
+
+  /* Timing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* ─── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--gray-950);
+  color: var(--gray-200);
+  display: grid;
+  grid-template-columns: var(--sidebar-left) 1fr var(--sidebar-right);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+
+/* ─── Custom Scrollbars ────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gray-700);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-600);
+}
+
+/* ─── Animations ───────────────────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.3); }
+  50%      { box-shadow: 0 0 12px 4px rgba(16, 185, 129, 0.15); }
+}
+
+@keyframes cropDash {
+  to { stroke-dashoffset: -24; }
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LEFT SIDEBAR — Strip Manager
+   ═══════════════════════════════════════════════════════════════════════════════ */
+#strip-sidebar {
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid var(--gray-700);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+
+#sidebar-header {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--gray-700);
+  /* macOS traffic lights occupy ~76px; add top padding */
+  padding-top: 42px;
+}
+
+#sidebar-header h2 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-300);
+  letter-spacing: 0.02em;
+}
+
+#btn-upload {
+  margin-top: 12px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, var(--emerald-600), var(--emerald-500));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+}
+#btn-upload:hover {
+  background: linear-gradient(135deg, var(--emerald-500), var(--emerald-400));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+}
+#btn-upload:active {
+  transform: translateY(0) scale(0.98);
+}
+#btn-upload.processing {
+  background: var(--gray-700);
+  color: var(--gray-400);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#strip-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+/* Strip Items */
+.strip-item {
+  position: relative;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s var(--ease-out);
+  animation: fadeIn 0.25s var(--ease-out) both;
+  margin-bottom: 4px;
+}
+.strip-item:hover {
+  background: rgba(31, 41, 55, 0.7);
+}
+.strip-item.active {
+  background: rgba(31, 41, 55, 0.9);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+.strip-item .active-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--emerald-500);
+  border-radius: 0 3px 3px 0;
+  transform: scaleY(0);
+  transition: transform 0.25s var(--ease-spring);
+}
+.strip-item.active .active-bar {
+  transform: scaleY(1);
+}
+
+.strip-info { overflow: hidden; padding-right: 30px; }
+.strip-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s;
+}
+.strip-item.active .strip-name { color: var(--gray-100); }
+
+.strip-dims {
+  font-size: 10px;
+  color: var(--gray-600);
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.crop-badge {
+  position: absolute;
+  right: 36px;
+  top: 12px;
+  background: var(--gray-700);
+  color: var(--gray-300);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip-delete {
+  position: absolute;
+  right: 8px;
+  top: 10px;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  color: var(--gray-600);
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.15s;
+}
+.strip-item:hover .strip-delete { opacity: 1; }
+.strip-delete:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--red-400);
+}
+
+.strip-empty {
+  text-align: center;
+  color: var(--gray-600);
+  font-size: 12px;
+  padding: 48px 20px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MAIN WORKSPACE
+   ═══════════════════════════════════════════════════════════════════════════════ */
+#workspace {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─── Toolbar ──────────────────────────────────────────────────────────────── */
+#toolbar {
+  height: var(--toolbar-h);
+  background: rgba(17, 24, 39, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--gray-700);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 30;
+  -webkit-app-region: drag; /* macOS: drag window from toolbar */
+}
+
+#toolbar button, #toolbar input { -webkit-app-region: no-drag; }
+
+#toolbar-left, #toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#brand {
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--emerald-400), var(--cyan-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+#toolbar-sep {
+  color: var(--gray-700);
+  font-size: 18px;
+  font-weight: 300;
+}
+
+#active-strip-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-400);
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tool Toggle */
+#tool-toggle {
+  display: flex;
+  background: var(--gray-800);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-700);
+  padding: 3px;
+}
+.tool-btn {
+  padding: 6px 16px;
+  border: none;
+  background: none;
+  color: var(--gray-400);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+}
+.tool-btn:hover {
+  color: var(--gray-200);
+  background: var(--gray-750);
+}
+.tool-btn.active-pan {
+  background: linear-gradient(135deg, var(--emerald-600), var(--emerald-500));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+.tool-btn.active-crop {
+  background: linear-gradient(135deg, var(--orange-500), var(--orange-400));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+}
+
+/* Zoom Controls */
+#zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--gray-800);
+  border: 1px solid var(--gray-700);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+#zoom-controls button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--gray-300);
+  font-size: 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#zoom-controls button:hover { background: var(--gray-700); }
+#zoom-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-300);
+  width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Viewport Container ──────────────────────────────────────────────────── */
+#viewport-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(17,24,39,0.5) 0%, var(--gray-950) 70%);
+}
+
+#viewport {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  z-index: 1;
+  scrollbar-width: none;
+}
+#viewport::-webkit-scrollbar { display: none; }
+
+#scroll-spacer {
+  /* Sized by JS to imageWidth*zoom × imageHeight*zoom */
+}
+
+#tile-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  pointer-events: none;
+  image-rendering: auto;
+}
+
+#crop-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  overflow: visible;
+}
+
+/* Crop SVG elements styling */
+.crop-rect {
+  transition: fill 0.1s;
+}
+.crop-handle {
+  cursor: pointer;
+}
+.crop-preview-rect {
+  animation: cropDash 0.6s linear infinite;
+}
+
+/* ─── Empty State ──────────────────────────────────────────────────────────── */
+#empty-state {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+#empty-state.hidden { display: none; }
+
+#empty-icon {
+  width: 80px;
+  height: 80px;
+  border: 3px dashed var(--gray-700);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-600);
+}
+
+#empty-title {
+  font-size: 16px;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+#empty-subtitle {
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+/* ─── Status Bar ───────────────────────────────────────────────────────────── */
+#status-bar {
+  height: var(--statusbar-h);
+  background: var(--gray-900);
+  border-top: 1px solid var(--gray-700);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 24px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--gray-500);
+  font-variant-numeric: tabular-nums;
+  z-index: 10;
+}
+#status-bar span {
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   RIGHT SIDEBAR — Panel / Crop Manager
+   ═══════════════════════════════════════════════════════════════════════════════ */
+#panel-sidebar {
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-left: 1px solid var(--gray-700);
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+}
+
+#panel-header {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--gray-700);
+  padding-top: 42px;
+}
+
+#panel-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--emerald-400);
+}
+
+#panel-strip-name {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#border-info {
+  margin-top: 12px;
+  background: rgba(0,0,0,0.3);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--gray-700);
+  font-size: 11px;
+  color: var(--gray-400);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.border-swatch {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: #000;
+  border: 1px solid var(--gray-600);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+#panel-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* Panel Items */
+.panel-item {
+  background: var(--gray-800);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  border: 1px solid var(--gray-700);
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+  animation: fadeIn 0.2s var(--ease-out) both;
+}
+.panel-item:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.panel-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.panel-number {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-300);
+}
+
+.panel-remove {
+  background: none;
+  border: none;
+  color: var(--red-400);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.panel-remove:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.panel-dims {
+  font-size: 10px;
+  color: var(--gray-600);
+  margin-bottom: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-download {
+  width: 100%;
+  padding: 7px 12px;
+  background: var(--gray-750);
+  border: 1px solid var(--gray-700);
+  color: var(--gray-300);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.panel-download:hover {
+  background: var(--gray-700);
+  border-color: var(--gray-600);
+}
+
+.panel-empty {
+  text-align: center;
+  color: var(--gray-600);
+  font-size: 12px;
+  padding: 48px 16px;
+  line-height: 1.6;
+}
+
+/* ─── Panel Footer ─────────────────────────────────────────────────────────── */
+#panel-footer {
+  padding: 16px;
+  border-top: 1px solid var(--gray-700);
+}
+
+#btn-download-all {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--emerald-600), var(--emerald-500));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+#btn-download-all:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
+}
+#btn-download-all:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+#btn-download-all:disabled {
+  background: var(--gray-700);
+  color: var(--gray-500);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#download-hint {
+  text-align: center;
+  font-size: 10px;
+  color: var(--gray-600);
+  margin-top: 8px;
+}
+
+/* ─── Utility ──────────────────────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+/* Cursor states set by JS on the crop-svg */
+.cursor-grab { cursor: grab !important; }
+.cursor-grabbing { cursor: grabbing !important; }
+.cursor-crosshair { cursor: crosshair !important; }

@@ -1,0 +1,12 @@
+{
+  "name": "mangacutie-pure",
+  "version": "1.0.0",
+  "description": "MangaCutie — Tile-based manga strip viewer. Zero UI libraries.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^42.3.2"
+  }
+}

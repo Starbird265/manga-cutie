@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MangaCutie</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══ LEFT SIDEBAR: Strip Manager ═══ -->
+  <aside id="strip-sidebar">
+    <div id="sidebar-header">
+      <h2>Uploaded Strips</h2>
+      <button id="btn-upload">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Upload Images
+      </button>
+    </div>
+    <div id="strip-list"></div>
+  </aside>
+
+  <!-- ═══ MAIN WORKSPACE ═══ -->
+  <main id="workspace">
+
+    <!-- Top Toolbar -->
+    <header id="toolbar">
+      <div id="toolbar-left">
+        <div id="brand">MangaCutie</div>
+        <span id="toolbar-sep">/</span>
+        <span id="active-strip-name">No strip selected</span>
+      </div>
+
+      <div id="toolbar-right">
+        <!-- Tool Mode Toggle -->
+        <div id="tool-toggle">
+          <button id="btn-pan" class="tool-btn active" title="Pan Mode (Drag to scroll)">✋ Pan</button>
+          <button id="btn-crop" class="tool-btn" title="Crop Mode (Draw selections)">✂️ Crop</button>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div id="zoom-controls">
+          <button id="btn-zoom-out" title="Zoom Out">−</button>
+          <span id="zoom-label">100%</span>
+          <button id="btn-zoom-in" title="Zoom In">+</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Viewport: scrollable image area -->
+    <div id="viewport-container">
+      <div id="viewport">
+        <div id="scroll-spacer"></div>
+      </div>
+      <canvas id="tile-canvas"></canvas>
+      <svg id="crop-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+      <!-- Empty state -->
+      <div id="empty-state">
+        <div id="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <p id="empty-title">Select or upload a strip to begin</p>
+        <p id="empty-subtitle">Supports PNG, JPG, WEBP, GIF — any size</p>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <footer id="status-bar">
+      <span id="stat-tiles">Tiles: 0 / 0</span>
+      <span id="stat-memory">Loading: 0</span>
+      <span id="stat-image">—</span>
+      <span id="stat-zoom">100%</span>
+    </footer>
+  </main>
+
+  <!-- ═══ RIGHT SIDEBAR: Panel / Crop Manager ═══ -->
+  <aside id="panel-sidebar">
+    <div id="panel-header">
+      <h2>Export Panels</h2>
+      <p id="panel-strip-name">—</p>
+      <div id="border-info">
+        <span class="border-swatch"></span>
+        <span>Automatic <strong>5px Black Border</strong> on export</span>
+      </div>
+    </div>
+    <div id="panel-list"></div>
+    <div id="panel-footer">
+      <button id="btn-download-all" disabled>
+        <span id="download-label">Download All Panels (0)</span>
+        <span id="download-progress" class="hidden">
+          <span id="progress-spinner" class="spinner"></span>
+          <span id="progress-text">0 / 0</span>
+        </span>
+      </button>
+      <p id="download-hint" class="hidden">Saves each panel as a PNG to your Desktop.</p>
+    </div>
+  </aside>
+
+  <!-- Scripts: loaded in dependency order -->
+  <script src="js/utils.js"></script>
+  <script src="js/tile-engine.js"></script>
+  <script src="js/crop-overlay.js"></script>
+  <script src="js/sidebar.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
