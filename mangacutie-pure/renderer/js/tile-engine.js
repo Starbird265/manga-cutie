@@ -121,9 +121,14 @@ const TileEngine = (function () {
     const scrollX = viewportEl.scrollLeft;
     const scrollY = viewportEl.scrollTop;
 
+    const contentW = imgW * zoom;
+    const contentH = imgH * zoom;
+    const offsetX = Math.max(0, (vpW - contentW) / 2);
+    const offsetY = Math.max(0, (vpH - contentH) / 2);
+
     // Visible area in image coordinates
-    const imgViewX = scrollX / zoom;
-    const imgViewY = scrollY / zoom;
+    const imgViewX = (scrollX - offsetX) / zoom;
+    const imgViewY = (scrollY - offsetY) / zoom;
     const imgViewW = vpW / zoom;
     const imgViewH = vpH / zoom;
 
@@ -149,8 +154,8 @@ const TileEngine = (function () {
         const tileH = Math.min(TILE_SIZE, imgH - tileY);
 
         // Screen position (relative to canvas / viewport)
-        const screenX = tileX * zoom - scrollX;
-        const screenY = tileY * zoom - scrollY;
+        const screenX = tileX * zoom - scrollX + offsetX;
+        const screenY = tileY * zoom - scrollY + offsetY;
         const screenW = tileW * zoom;
         const screenH = tileH * zoom;
 

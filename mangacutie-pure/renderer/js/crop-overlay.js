@@ -67,8 +67,13 @@ const CropOverlay = (function () {
    * Called by app.js on every scroll and zoom change.
    */
   function updateViewBox(scrollX, scrollY, vpW, vpH) {
-    const vbX = scrollX / zoom;
-    const vbY = scrollY / zoom;
+    const contentW = imgW * zoom;
+    const contentH = imgH * zoom;
+    const offsetX = Math.max(0, (vpW - contentW) / 2);
+    const offsetY = Math.max(0, (vpH - contentH) / 2);
+
+    const vbX = (scrollX - offsetX) / zoom;
+    const vbY = (scrollY - offsetY) / zoom;
     const vbW = vpW / zoom;
     const vbH = vpH / zoom;
     svg.setAttribute('viewBox', `${vbX} ${vbY} ${vbW} ${vbH}`);
