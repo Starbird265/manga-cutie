@@ -1,26 +1,26 @@
 # 🌸 MangaCutie
 
-**MangaCutie** is a lightweight, modern, and blazingly fast image viewer built with Python and PyQt6. It is purpose-built to solve a specific problem: viewing **extremely long image strips** (such as Webtoons, Manhwa, and vertically scrolling Manga) natively on your desktop without stuttering, crashing, or hitting operating system texture limits.
+**MangaCutie** is a lightweight, modern, and blazingly fast image viewer built with **pure Electron** and **Vanilla Javascript**. It is purpose-built to solve a specific problem: viewing **extremely long image strips** (such as Webtoons, Manhwa, and vertically scrolling Manga) natively on your desktop without stuttering or hitting operating system texture limits.
 
-Powered by a **tile-based lazy loading engine** (like Google Maps), MangaCutie only loads the pixels you can actually see. This means truly infinite image sizes with minimal RAM usage.
+Powered by a native Desktop wrapper and intelligent rendering engine, MangaCutie only loads the pixels you can actually see, ensuring smooth performance.
 
 ---
 
 ## ✨ Key Features
 
 - 🚀 **Tile-Based Lazy Loading:** Instead of loading the entire image at once, the engine divides images into a grid of 512×512 tiles and only loads the ones visible in your viewport. Tiles far off-screen are automatically evicted from memory (LRU). RAM stays bounded no matter how large the image is.
-- ✂️ **Multi-Selection Crop Tool:** Toggle crop mode, draw multiple selection rectangles across the strip, and download them all in one click. Great for batch-saving panels. All crops are organized into a folder on your Desktop named after the strip (e.g., `MangaCutie - chapter_01/`).
-- 💾 **Smart Auto-Caching:** Never lose your place! MangaCutie automatically saves your **uploaded strips**, your **selected panels**, your **zoom level**, your **panel layout sizes**, and your **exact scroll position**. If you accidentally close the app, everything resumes exactly where you left off.
-- 🖱️ **Smooth Navigation:** Read naturally with click-and-drag panning. Use `Ctrl + MouseWheel` for precise zooming in and out.
-- 🎨 **Modern Dark UI:** A sleek, minimal, and eye-friendly dark mode interface with a status bar that shows real-time tile info and selection dimensions.
+- ✂️ **Multi-Selection Crop Tool:** Toggle crop mode, draw multiple selection rectangles across the strip, move and resize them, and download them all in one click. Great for batch-saving panels. All crops are exported with a sleek 5px inner black border and organized into a folder on your Desktop named after the strip (e.g., `MangaCutie - chapter_01/`).
+- 💾 **Smart Auto-Caching:** Never lose your place! MangaCutie automatically saves your **uploaded strips**, your **drawn crop boxes**, your **zoom level**, and your **exact scroll position**. If you accidentally close the app, everything resumes exactly where you left off.
+- 🖱️ **Smooth Navigation:** Read naturally with click-and-drag panning. Use `+`/`-` buttons or `Ctrl/Cmd + MouseWheel` for precise zooming in and out.
+- 🎨 **Modern Dark UI:** A sleek, minimal, and eye-friendly dark mode interface with a status bar that shows real-time tile info.
 
 ---
 
 ## 🛠️ Technology Stack
 
-- **Python 3.7+**
-- **PyQt6:** For the robust, hardware-accelerated GUI.
-- **Pillow (PIL):** For safe, unlimited-size image processing and on-demand tile decoding.
+- **Node.js**
+- **Electron:** For the robust, hardware-accelerated Desktop GUI and native File System integration.
+- **Vanilla Javascript:** Pure, zero-framework architecture for minimal overhead and maximum performance.
 
 ---
 
@@ -48,7 +48,7 @@ Ready to start reading your long manga strips? Please head over to the **[HOW_TO
 ├──────────────────────────────────────────────┤
 │          Viewport (what you see)             │
 │  ┌─────────────┐                             │
-│  │  Only these  │  ← 6-12 tiles loaded       │
+│  │  Only these  │  ← Max 64 tiles loaded      │
 │  │  tiles are   │     in RAM at any time      │
 │  │  in memory   │                             │
 │  └─────────────┘                             │
