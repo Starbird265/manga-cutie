@@ -17,6 +17,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadCache: () =>
     ipcRenderer.invoke('load-cache'),
 
+  // Clear persisted app state
+  clearCache: () =>
+    ipcRenderer.invoke('clear-cache'),
+
   // Check if a file still exists (for cache validation)
   fileExists: (filePath) =>
     ipcRenderer.invoke('file-exists', filePath)

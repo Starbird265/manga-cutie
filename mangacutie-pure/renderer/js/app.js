@@ -28,7 +28,7 @@
 
   let viewport, scrollSpacer, tileCanvas, cropSvg, emptyState;
   let btnUpload, btnPan, btnCrop, btnZoomIn, btnZoomOut, zoomLabel;
-  let activeStripNameEl, btnDownloadAll;
+  let activeStripNameEl, btnDownloadAll, btnClearMemory;
 
   // ═══════════════════════════════════════════════════════════════════════════
   // INIT
@@ -42,6 +42,7 @@
     cropSvg        = document.getElementById('crop-svg');
     emptyState     = document.getElementById('empty-state');
     btnUpload      = document.getElementById('btn-upload');
+    btnClearMemory = document.getElementById('btn-clear-memory');
     btnPan         = document.getElementById('btn-pan');
     btnCrop        = document.getElementById('btn-crop');
     btnZoomIn      = document.getElementById('btn-zoom-in');
@@ -69,8 +70,9 @@
   // ═══════════════════════════════════════════════════════════════════════════
 
   function _bindEvents() {
-    // Upload
+    // Upload & Clear
     btnUpload.addEventListener('click', _handleUpload);
+    btnClearMemory.addEventListener('click', _handleClearMemory);
 
     // Tool toggle
     btnPan.addEventListener('click', () => _setToolMode('PAN'));
@@ -517,6 +519,15 @@
   function _updateCursorStatus(e) {
     // Optional: show cursor position in image coords on status bar
     // Not a critical feature, just nice to have
+  }
+
+  async function _handleClearMemory() {
+    if (confirm('Are you sure you want to clear memory? This will remove all saved strips, crops, and start a fresh session.')) {
+      if (window.electronAPI && window.electronAPI.clearCache) {
+        await window.electronAPI.clearCache();
+      }
+      window.location.reload();
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

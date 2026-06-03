@@ -107,6 +107,18 @@ ipcMain.handle('load-cache', async () => {
   }
 });
 
+ipcMain.handle('clear-cache', async () => {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      fs.unlinkSync(CACHE_FILE);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to clear cache:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 // ─── IPC: Check if file exists (for cache validation) ─────────────────────────
 
 ipcMain.handle('file-exists', async (_event, filePath) => {
