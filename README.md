@@ -9,7 +9,7 @@ Powered by a **tile-based lazy loading engine** (like Google Maps), MangaCutie o
 ## ✨ Key Features
 
 - 🚀 **Tile-Based Lazy Loading:** Instead of loading the entire image at once, the engine divides images into a grid of 512×512 tiles and only loads the ones visible in your viewport. Tiles far off-screen are automatically evicted from memory (LRU). RAM stays bounded no matter how large the image is.
-- ✂️ **Crop & Selection Tool:** Toggle crop mode, draw a rectangle over any region of the manga, and save the cropped area as a PNG. All crops are organized into a folder on your Desktop named after the strip (e.g., `MangaCutie - chapter_01/`).
+- ✂️ **Multi-Selection Crop Tool:** Toggle crop mode, draw multiple selection rectangles across the strip, and download them all in one click. Great for batch-saving panels. All crops are organized into a folder on your Desktop named after the strip (e.g., `MangaCutie - chapter_01/`).
 - 💾 **Smart Auto-Caching:** Never lose your place! MangaCutie automatically saves your **uploaded strips**, your **selected panels**, your **zoom level**, your **panel layout sizes**, and your **exact scroll position**. If you accidentally close the app, everything resumes exactly where you left off.
 - 🖱️ **Smooth Navigation:** Read naturally with click-and-drag panning. Use `Ctrl + MouseWheel` for precise zooming in and out.
 - 🎨 **Modern Dark UI:** A sleek, minimal, and eye-friendly dark mode interface with a status bar that shows real-time tile info and selection dimensions.

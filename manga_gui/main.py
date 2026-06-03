@@ -6,8 +6,8 @@ import math
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QFileDialog, QListWidget, QGraphicsView, QGraphicsScene,
-    QGraphicsPixmapItem, QGraphicsRectItem, QMessageBox, QLabel, QSplitter,
-    QStatusBar
+    QGraphicsPixmapItem, QGraphicsRectItem, QGraphicsTextItem, QMessageBox,
+    QLabel, QSplitter, QStatusBar
 )
 from PyQt6.QtGui import QPixmap, QImage, QPainter, QPen, QColor, QBrush, QCursor
 from PyQt6.QtCore import Qt, QRectF, QPointF, QTimer
@@ -32,11 +32,19 @@ class TilePlaceholder(QGraphicsRectItem):
 
 class SelectionOverlay(QGraphicsRectItem):
     """Semi-transparent selection rectangle for cropping."""
-    def __init__(self):
+    def __init__(self, number=1):
         super().__init__()
+        self.number = number
         self.setPen(QPen(QColor(0, 200, 100), 2, Qt.PenStyle.DashLine))
         self.setBrush(QBrush(QColor(0, 200, 100, 40)))
         self.setZValue(1000)  # Always on top
+        # Number label inside the selection
+        self.label = QGraphicsTextItem(str(number), self)
+        self.label.setDefaultTextColor(QColor(255, 255, 255))
+        font = self.label.font()
+        font.setPointSize(14)
+        font.setBold(True)
+        self.label.setFont(font)
 
 
 class MangaViewer(QGraphicsView):
@@ -64,9 +72,9 @@ class MangaViewer(QGraphicsView):
 
         # Crop / selection state
         self.crop_mode = False
-        self.selection_overlay = None
+        self.active_overlay = None  # The overlay currently being drawn
         self.selection_start = None
-        self.crop_rect = None  # QRectF in scene coordinates
+        self.crop_selections = []  # List of (QRectF, SelectionOverlay) tuples
 
         # Debounce timer for tile updates
         self._tile_timer = QTimer()
@@ -91,35 +99,34 @@ class MangaViewer(QGraphicsView):
         else:
             self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
             self.setCursor(QCursor(Qt.CursorShape.ArrowCursor))
-            # Remove selection overlay if exists
-            if self.selection_overlay and self.selection_overlay.scene():
-                self.scene.removeItem(self.selection_overlay)
-            self.selection_overlay = None
-            self.crop_rect = None
+            # Note: we keep existing selections on screen — they persist!
+            self.active_overlay = None
 
-    # ─── Mouse events for crop selection ───────────────────────────────
+    # ─── Mouse events for multi-crop selection ─────────────────────────
     def mousePressEvent(self, event):
         if self.crop_mode and event.button() == Qt.MouseButton.LeftButton:
             self.selection_start = self.mapToScene(event.pos())
-            if self.selection_overlay and self.selection_overlay.scene():
-                self.scene.removeItem(self.selection_overlay)
-            self.selection_overlay = SelectionOverlay()
-            self.selection_overlay.setRect(QRectF(self.selection_start, self.selection_start))
-            self.scene.addItem(self.selection_overlay)
+            num = len(self.crop_selections) + 1
+            self.active_overlay = SelectionOverlay(num)
+            self.active_overlay.setRect(QRectF(self.selection_start, self.selection_start))
+            self.scene.addItem(self.active_overlay)
             event.accept()
         else:
             super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if self.crop_mode and self.selection_start is not None:
+        if self.crop_mode and self.selection_start is not None and self.active_overlay:
             current = self.mapToScene(event.pos())
             rect = QRectF(self.selection_start, current).normalized()
             # Clamp to image bounds
             rect = rect.intersected(QRectF(0, 0, self.total_width, self.total_height))
-            self.selection_overlay.setRect(rect)
+            self.active_overlay.setRect(rect)
+            # Reposition the label to the top-left of the selection
+            self.active_overlay.label.setPos(rect.x() + 4, rect.y() + 2)
             if self.status_callback:
+                total = len(self.crop_selections) + 1
                 self.status_callback(
-                    f"Selection: {int(rect.width())}×{int(rect.height())} px  "
+                    f"Drawing #{total}: {int(rect.width())}×{int(rect.height())} px  "
                     f"at ({int(rect.x())}, {int(rect.y())})"
                 )
             event.accept()
@@ -127,20 +134,48 @@ class MangaViewer(QGraphicsView):
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        if self.crop_mode and self.selection_start is not None:
+        if self.crop_mode and self.selection_start is not None and self.active_overlay:
             current = self.mapToScene(event.pos())
             rect = QRectF(self.selection_start, current).normalized()
             rect = rect.intersected(QRectF(0, 0, self.total_width, self.total_height))
-            self.crop_rect = rect
             self.selection_start = None
-            if self.status_callback:
-                self.status_callback(
-                    f"✅ Selected: {int(rect.width())}×{int(rect.height())} px  —  "
-                    f"Click 'Save Crop' to export"
-                )
+            # Only add if selection is large enough (not accidental clicks)
+            if rect.width() > 5 and rect.height() > 5:
+                self.active_overlay.setRect(rect)
+                self.active_overlay.label.setPos(rect.x() + 4, rect.y() + 2)
+                self.crop_selections.append((rect, self.active_overlay))
+                if self.status_callback:
+                    self.status_callback(
+                        f"✅ {len(self.crop_selections)} selection(s) queued  —  "
+                        f"Click '💾 Save All' to export them all at once"
+                    )
+            else:
+                # Too small — remove it
+                if self.active_overlay.scene():
+                    self.scene.removeItem(self.active_overlay)
+            self.active_overlay = None
             event.accept()
         else:
             super().mouseReleaseEvent(event)
+
+    def undo_last_selection(self):
+        """Remove the most recent selection."""
+        if self.crop_selections:
+            rect, overlay = self.crop_selections.pop()
+            if overlay.scene():
+                self.scene.removeItem(overlay)
+            if self.status_callback:
+                count = len(self.crop_selections)
+                self.status_callback(f"{count} selection(s) remaining")
+
+    def clear_all_selections(self):
+        """Remove all selections from the scene."""
+        for rect, overlay in self.crop_selections:
+            if overlay.scene():
+                self.scene.removeItem(overlay)
+        self.crop_selections.clear()
+        if self.status_callback:
+            self.status_callback("All selections cleared")
 
     # ─── Zoom ──────────────────────────────────────────────────────────
     def wheelEvent(self, event):
@@ -170,8 +205,8 @@ class MangaViewer(QGraphicsView):
         self.placeholders.clear()
         self.zoom_factor = 1.0
         self.resetTransform()
-        self.crop_rect = None
-        self.selection_overlay = None
+        self.crop_selections = []
+        self.active_overlay = None
 
         try:
             self.pil_image = Image.open(file_path)
@@ -302,22 +337,10 @@ class MangaViewer(QGraphicsView):
             self._unload_tile(key)
 
     # ─── Crop export ───────────────────────────────────────────────────
-    def save_crop(self):
-        """Export the selected crop region from the original image."""
-        if not self.crop_rect or not self.pil_image or not self.current_file:
-            return None
-
-        rect = self.crop_rect
-        x = max(0, int(rect.x()))
-        y = max(0, int(rect.y()))
-        w = min(int(rect.width()), self.total_width - x)
-        h = min(int(rect.height()), self.total_height - y)
-
-        if w <= 0 or h <= 0:
-            return None
-
-        # Crop directly from source image (memory efficient)
-        cropped = self.pil_image.crop((x, y, x + w, y + h))
+    def save_all_crops(self):
+        """Export ALL queued crop selections from the original image."""
+        if not self.crop_selections or not self.pil_image or not self.current_file:
+            return []
 
         # Create folder on Desktop named after the strip
         strip_name = os.path.splitext(os.path.basename(self.current_file))[0]
@@ -325,14 +348,31 @@ class MangaViewer(QGraphicsView):
         save_dir = os.path.join(desktop, f"MangaCutie - {strip_name}")
         os.makedirs(save_dir, exist_ok=True)
 
-        # Find next available filename
+        # Find next available number
         existing = [f for f in os.listdir(save_dir) if f.startswith("crop_") and f.endswith(".png")]
         next_num = len(existing) + 1
-        filename = f"crop_{next_num:03d}_{x}x{y}_{w}x{h}.png"
-        save_path = os.path.join(save_dir, filename)
 
-        cropped.save(save_path, "PNG")
-        return save_path
+        saved_paths = []
+        for i, (rect, overlay) in enumerate(self.crop_selections):
+            x = max(0, int(rect.x()))
+            y = max(0, int(rect.y()))
+            w = min(int(rect.width()), self.total_width - x)
+            h = min(int(rect.height()), self.total_height - y)
+
+            if w <= 0 or h <= 0:
+                continue
+
+            # Crop directly from source image (memory efficient)
+            cropped = self.pil_image.crop((x, y, x + w, y + h))
+            filename = f"crop_{next_num + i:03d}_{x}x{y}_{w}x{h}.png"
+            save_path = os.path.join(save_dir, filename)
+            cropped.save(save_path, "PNG")
+            saved_paths.append(save_path)
+
+        # Clear all selections from the scene after saving
+        self.clear_all_selections()
+
+        return saved_paths, save_dir
 
 
 class MainWindow(QMainWindow):
@@ -371,20 +411,42 @@ class MainWindow(QMainWindow):
         )
         self.btn_crop.toggled.connect(self.toggle_crop_mode)
 
-        self.btn_save_crop = QPushButton("💾 Save Crop")
-        self.btn_save_crop.setStyleSheet(
+        self.btn_save_all = QPushButton("💾 Save All")
+        self.btn_save_all.setStyleSheet(
             "padding: 8px 14px; font-weight: bold; background-color: #c0392b; "
             "color: white; border-radius: 4px;"
         )
-        self.btn_save_crop.clicked.connect(self.save_crop)
-        self.btn_save_crop.setEnabled(False)
+        self.btn_save_all.clicked.connect(self.save_all_crops)
+        self.btn_save_all.setEnabled(False)
+
+        self.btn_undo = QPushButton("↩ Undo Last")
+        self.btn_undo.setStyleSheet(
+            "padding: 8px 14px; font-weight: bold; background-color: #7f8c8d; "
+            "color: white; border-radius: 4px;"
+        )
+        self.btn_undo.clicked.connect(self.undo_last_selection)
+        self.btn_undo.setEnabled(False)
+
+        self.btn_clear = QPushButton("🗑 Clear All")
+        self.btn_clear.setStyleSheet(
+            "padding: 8px 14px; font-weight: bold; background-color: #7f8c8d; "
+            "color: white; border-radius: 4px;"
+        )
+        self.btn_clear.clicked.connect(self.clear_all_selections)
+        self.btn_clear.setEnabled(False)
+
+        self.lbl_count = QLabel("  0 selected")
+        self.lbl_count.setStyleSheet("color: #2ecc71; font-weight: bold; font-size: 13px;")
 
         self.lbl_info = QLabel("Tile-Based Engine • Infinite Length • Zero RAM Waste")
         self.lbl_info.setStyleSheet("color: #666; font-style: italic;")
 
         toolbar.addWidget(self.btn_upload)
         toolbar.addWidget(self.btn_crop)
-        toolbar.addWidget(self.btn_save_crop)
+        toolbar.addWidget(self.btn_save_all)
+        toolbar.addWidget(self.btn_undo)
+        toolbar.addWidget(self.btn_clear)
+        toolbar.addWidget(self.lbl_count)
         toolbar.addWidget(self.lbl_info)
         toolbar.addStretch()
 
@@ -415,9 +477,12 @@ class MainWindow(QMainWindow):
 
     def update_status(self, msg):
         self.statusbar.showMessage(msg)
-        # Enable save crop button when selection exists
-        if self.viewer.crop_rect:
-            self.btn_save_crop.setEnabled(True)
+        count = len(self.viewer.crop_selections)
+        self.lbl_count.setText(f"  {count} selected")
+        has_selections = count > 0
+        self.btn_save_all.setEnabled(has_selections)
+        self.btn_undo.setEnabled(has_selections)
+        self.btn_clear.setEnabled(has_selections)
 
     def toggle_crop_mode(self, checked):
         self.viewer.set_crop_mode(checked)
@@ -426,29 +491,50 @@ class MainWindow(QMainWindow):
                 "padding: 8px 14px; font-weight: bold; background-color: #e67e22; "
                 "color: white; border-radius: 4px;"
             )
-            self.statusbar.showMessage("✂️ Crop Mode ON — Draw a rectangle on the image")
+            self.statusbar.showMessage("✂️ Crop Mode ON — Draw rectangles on the image, then Save All")
         else:
             self.btn_crop.setStyleSheet(
                 "padding: 8px 14px; font-weight: bold; background-color: #555; "
                 "color: white; border-radius: 4px;"
             )
-            self.btn_save_crop.setEnabled(False)
             self.statusbar.showMessage("Crop Mode OFF")
 
-    def save_crop(self):
-        if not self.viewer.crop_rect:
-            QMessageBox.warning(self, "No Selection", "Please draw a selection rectangle first.")
+    def save_all_crops(self):
+        if not self.viewer.crop_selections:
+            QMessageBox.warning(self, "No Selections", "Please draw at least one selection rectangle first.")
             return
 
-        save_path = self.viewer.save_crop()
-        if save_path:
-            self.statusbar.showMessage(f"✅ Saved: {save_path}")
+        result = self.viewer.save_all_crops()
+        if result:
+            saved_paths, save_dir = result
+            count = len(saved_paths)
+            self.statusbar.showMessage(f"✅ Saved {count} crop(s) to Desktop")
+            self.lbl_count.setText("  0 selected")
+            self.btn_save_all.setEnabled(False)
+            self.btn_undo.setEnabled(False)
+            self.btn_clear.setEnabled(False)
             QMessageBox.information(
-                self, "Crop Saved!",
-                f"Cropped image saved to:\n{save_path}"
+                self, "All Crops Saved!",
+                f"{count} cropped image(s) saved to:\n{save_dir}"
             )
         else:
-            QMessageBox.warning(self, "Error", "Failed to save crop. Make sure a valid area is selected.")
+            QMessageBox.warning(self, "Error", "Failed to save crops.")
+
+    def undo_last_selection(self):
+        self.viewer.undo_last_selection()
+        count = len(self.viewer.crop_selections)
+        self.lbl_count.setText(f"  {count} selected")
+        has_selections = count > 0
+        self.btn_save_all.setEnabled(has_selections)
+        self.btn_undo.setEnabled(has_selections)
+        self.btn_clear.setEnabled(has_selections)
+
+    def clear_all_selections(self):
+        self.viewer.clear_all_selections()
+        self.lbl_count.setText("  0 selected")
+        self.btn_save_all.setEnabled(False)
+        self.btn_undo.setEnabled(False)
+        self.btn_clear.setEnabled(False)
 
     def load_state(self):
         if os.path.exists(self.cache_file):

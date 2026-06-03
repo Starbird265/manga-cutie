@@ -64,17 +64,19 @@ This is MangaCutie's most powerful feature for manga collectors and editors:
 
 1. Click the **"✂️ Crop Mode"** button in the toolbar — it will turn orange to indicate crop mode is active.
 2. Your cursor will change to a crosshair.
-3. **Draw a rectangle** on the image by clicking and dragging. A green dashed rectangle will show your selection.
-4. The status bar at the bottom will display the exact dimensions and position of your selection (e.g., `Selection: 800×600 px at (120, 340)`).
-5. Click the **"💾 Save Crop"** button to export the selected area.
+3. **Draw a rectangle** on the image by clicking and dragging. A green dashed rectangle will show your selection with a number indicating its order in the queue.
+4. **Select multiple panels:** Keep drawing rectangles on other parts of the image! They will be numbered sequentially (1, 2, 3...).
+5. The status bar at the bottom will display the exact dimensions of your latest selection and a counter will track how many selections you have made.
+6. Made a mistake? Click **"↩ Undo Last"** to remove the last rectangle you drew, or **"🗑 Clear All"** to start over.
+7. Click the **"💾 Save All"** button to export all your selected areas at once in a single click!
 
 **Where do crops get saved?**
 - A folder is automatically created on your **Desktop** named `MangaCutie - [strip name]`.
 - For example, if you're reading `chapter_01.png`, your crops go to `~/Desktop/MangaCutie - chapter_01/`.
 - Each crop is saved as a lossless PNG file with a descriptive name like `crop_001_120x340_800x600.png`.
-- You can crop as many areas as you want — they are numbered sequentially!
+- The crops are numbered based on the order you drew the rectangles!
 
-6. To exit crop mode, click the **"✂️ Crop Mode"** button again to toggle it off. You'll return to normal scroll/pan mode.
+8. To exit crop mode, click the **"✂️ Crop Mode"** button again to toggle it off. You'll return to normal scroll/pan mode.
 
 ### 💾 Auto-Resume (Crash & Exit Protection)
 You don't need to manually save anything! MangaCutie constantly records your session. If you accidentally close the app, or if you just want to take a break, simply exit.
